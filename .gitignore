@@ -1,9 +1,10 @@
-# Bỏ qua file môi trường chứa thông tin bảo mật
 .env
 
-# Bỏ qua file dữ liệu SQL (nếu không muốn đưa lên repo)
+.env.example
+
 data.sql
 
-# Bỏ qua môi trường ảo Python
+requirements.txt
+
 .venv/
 __pycache__/
