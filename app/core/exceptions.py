@@ -11,7 +11,6 @@ def response_json(response: ResponseModel):
         content=jsonable_encoder(response.model_dump()),
     )
 
-
 def http_exception_handler(request: Request, exc: HTTPException):
     response = create_response(
         request,
@@ -20,7 +19,6 @@ def http_exception_handler(request: Request, exc: HTTPException):
         errors=exc.detail,
     )
     return response_json(response)
-
 
 def validation_exception_handler(request: Request, exc: RequestValidationError):
     response = create_response(
@@ -31,7 +29,6 @@ def validation_exception_handler(request: Request, exc: RequestValidationError):
     )
     return response_json(response)
 
-
 def generic_exception_handler(request: Request, exc: Exception):
     response = create_response(
         request,
@@ -40,7 +37,6 @@ def generic_exception_handler(request: Request, exc: Exception):
         errors=str(exc),
     )
     return response_json(response)
-
 
 def register_exception_handlers(app):
     app.add_exception_handler(HTTPException, http_exception_handler)
