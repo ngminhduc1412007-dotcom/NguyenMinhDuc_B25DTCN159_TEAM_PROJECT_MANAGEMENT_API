@@ -18,7 +18,6 @@ class TaskUpdate(BaseModel):
     priority: str
     due_date: datetime 
 
-
 class TaskResponse(BaseModel):
     id : int
     project_id: int

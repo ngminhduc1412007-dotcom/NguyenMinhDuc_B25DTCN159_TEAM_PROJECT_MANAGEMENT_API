@@ -1,11 +1,10 @@
-from datetime import datetime
-from typing import Any
+from typing import Any, Optional
 from pydantic import BaseModel
 
 class ResponseModel(BaseModel):
     status_code: int
     message: str
-    data: Any = None
-    error: Any = None
-    timestamp: datetime
+    data: Optional[Any] = None
+    errors: Optional[Any] = None
+    timestamp: str
     path: str

@@ -1,38 +1,48 @@
-from datetime import datetime
-from fastapi import Request
+from fastapi import HTTPException, Request, status
+from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from starlette.exceptions import HTTPException
+from app.schemas.response import ResponseModel
+from app.core.response import create_response
 
-def create_error_response(status_code: int, message: str, error, path: str):
+def response_json(response: ResponseModel):
     return JSONResponse(
-        status_code=status_code,
-        content={
-            "status_code": status_code,
-            "message": message,
-            "data": None,
-            "error": error,
-            "timestamp": datetime.now().isoformat(),
-            "path": path
-        }
+        status_code=response.status_code,
+        content=jsonable_encoder(response.model_dump()),
     )
+
 
 def http_exception_handler(request: Request, exc: HTTPException):
-    if exc.status_code == 200:
-        message = "OK"
-    elif exc.status_code == 201:
-        message = "Created"
-    elif exc.status_code == 400:
-        message = "Bad request"
-    elif exc.status_code == 403:
-        message = "Forbidden"
-    elif exc.status_code == 404:
-        message = "Resource not found"
-    else:
-        message = "Request failed"
-
-    return create_error_response(
-        status_code=exc.status_code,
-        message=message,
-        error=exc.detail,
-        path=request.url.path
+    response = create_response(
+        request,
+        exc.status_code,
+        "Failed",
+        errors=exc.detail,
     )
+    return response_json(response)
+
+
+def validation_exception_handler(request: Request, exc: RequestValidationError):
+    response = create_response(
+        request,
+        status.HTTP_422_UNPROCESSABLE_ENTITY,
+        "Failed",
+        errors=exc.errors(),
+    )
+    return response_json(response)
+
+
+def generic_exception_handler(request: Request, exc: Exception):
+    response = create_response(
+        request,
+        status.HTTP_500_INTERNAL_SERVER_ERROR,
+        "Failed",
+        errors=str(exc),
+    )
+    return response_json(response)
+
+
+def register_exception_handlers(app):
+    app.add_exception_handler(HTTPException, http_exception_handler)
+    app.add_exception_handler(RequestValidationError, validation_exception_handler)
+    app.add_exception_handler(Exception, generic_exception_handler)
