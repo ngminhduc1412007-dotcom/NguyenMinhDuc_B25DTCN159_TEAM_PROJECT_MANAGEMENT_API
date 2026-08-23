@@ -12,9 +12,11 @@ from app.core.security import(
     ACCESS_TOKEN_EXPIRE_MINUTES,
 )
 
+# Tìm người dùng theo email để dùng chung cho đăng ký và đăng nhập.
 def get_user(email: str, db: Session):
     return db.query(User).filter(User.email == email).first()
 
+# Kiểm tra email trùng, băm password và lưu tài khoản mới.
 def register_service(user: UserRegisterRequest, db: Session):
     user_db = get_user(user.email, db)
     if user_db:
@@ -34,6 +36,7 @@ def register_service(user: UserRegisterRequest, db: Session):
     db.refresh(new_user)
     return new_user
 
+# Xác thực thông tin đăng nhập và phát hành JWT cho người dùng hợp lệ.
 def login_service(user: UserLoginRequest, db: Session):
     user_db = get_user(user.email, db)
     if not user_db:

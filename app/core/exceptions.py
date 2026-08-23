@@ -5,12 +5,14 @@ from fastapi.responses import JSONResponse
 from app.schemas.response import ResponseModel
 from app.core.response import create_response
 
+# Chuyển một ResponseModel thành phản hồi JSON mà FastAPI có thể trả về.
 def response_json(response: ResponseModel):
     return JSONResponse(
         status_code=response.status_code,
         content=jsonable_encoder(response.model_dump()),
     )
 
+# Chuẩn hóa lỗi HTTPException về cùng cấu trúc phản hồi của ứng dụng.
 def http_exception_handler(request: Request, exc: HTTPException):
     response = create_response(
         request,
@@ -20,6 +22,7 @@ def http_exception_handler(request: Request, exc: HTTPException):
     )
     return response_json(response)
 
+# Trả về chi tiết các lỗi khi dữ liệu request không vượt qua validation.
 def validation_exception_handler(request: Request, exc: RequestValidationError):
     response = create_response(
         request,
@@ -29,6 +32,7 @@ def validation_exception_handler(request: Request, exc: RequestValidationError):
     )
     return response_json(response)
 
+# Bắt các lỗi ngoài dự kiến để API vẫn trả về JSON thống nhất.
 def generic_exception_handler(request: Request, exc: Exception):
     response = create_response(
         request,
@@ -37,8 +41,3 @@ def generic_exception_handler(request: Request, exc: Exception):
         errors=str(exc),
     )
     return response_json(response)
-
-def register_exception_handlers(app):
-    app.add_exception_handler(HTTPException, http_exception_handler)
-    app.add_exception_handler(RequestValidationError, validation_exception_handler)
-    app.add_exception_handler(Exception, generic_exception_handler)

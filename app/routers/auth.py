@@ -12,8 +12,10 @@ from app.services.auth_service import(
     login_service
 )
 
+# Nhóm endpoint đăng ký và đăng nhập.
 routers = APIRouter(tags=["authentication"])
 
+# Tạo tài khoản rồi trả về các thông tin an toàn của người dùng.
 @routers.post("/auth/register", response_model=ResponseModel, status_code=status.HTTP_201_CREATED)
 def register(request: Request, user: UserRegisterRequest, db: Session = Depends(get_db)):
     created_user = register_service(user, db)
@@ -31,6 +33,7 @@ def register(request: Request, user: UserRegisterRequest, db: Session = Depends(
         },
     )
 
+# Xác thực thông tin đăng nhập và trả về access token.
 @routers.post("/auth/login", response_model=ResponseModel, status_code=status.HTTP_200_OK)
 def login(request: Request, user: UserLoginRequest, db: Session = Depends(get_db)):
     login_data = login_service(user, db)

@@ -3,6 +3,7 @@ from sqlalchemy import Boolean, Column, DateTime, Integer, String
 from sqlalchemy.orm import relationship
 from app.db.database import Base
 
+# Model tài khoản người dùng và các quan hệ đến project/task.
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
@@ -12,18 +13,21 @@ class User(Base):
     role = Column(String(30), default="user", nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime, default=datetime.now, nullable=False)
-    
+
+    # Danh sách project do người dùng sở hữu.
     owned_projects = relationship(
         "Project",
         back_populates="owner"
     )
 
+    # Các bản ghi thành viên project của người dùng.
     project_members = relationship(
         "ProjectMember",
         back_populates="user",
         cascade="all, delete-orphan"
     )
 
+    # Các task được giao cho người dùng.
     assigned_tasks = relationship(
         "Task",
         back_populates="assignee"

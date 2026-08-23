@@ -4,10 +4,12 @@ from sqlalchemy.orm import Session
 from app.models.user import User
 from app.services.user_service import security_user_data
 
+# Lấy toàn bộ user theo id và loại bỏ trường password khỏi kết quả.
 def get_all_user_service(db: Session):
-    users = db.query(User).order_by(User.id).all()# lấy toàn bộ kết quả theo id tăng dần
-    return [security_user_data(user) for user in users]# trả kết quả không hiển thị password
+    users = db.query(User).order_by(User.id).all()
+    return [security_user_data(user) for user in users]
 
+# Tìm user theo id và báo lỗi nếu không tồn tại.
 def get_user_by_id_service(user_id: int, db: Session):
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
@@ -17,10 +19,10 @@ def get_user_by_id_service(user_id: int, db: Session):
         )
     return security_user_data(user)
 
+# Lọc danh sách theo email hoặc họ tên nếu người quản trị truyền từ khóa.
 def list_users_service(db: Session, search: Optional[str] = None):
     users = db.query(User).order_by(User.id).all()
     if search:
         search = search.strip().lower()
         users = [user for user in users if search in user.email.lower() or search in user.full_name.lower()]
-        # tìm kiếm user trong data với email hoặc tên
     return [security_user_data(user) for user in users]

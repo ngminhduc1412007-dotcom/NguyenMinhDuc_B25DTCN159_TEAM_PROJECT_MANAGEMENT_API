@@ -2,6 +2,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from app.models.user import User
 
+# Chọn các trường an toàn để không đưa password_hash vào response.
 def security_user_data(user: User):
 	return {
 		"id": user.id,
@@ -12,6 +13,7 @@ def security_user_data(user: User):
 		"created_at": user.created_at,
 	}
 
+# Tìm hồ sơ theo email nằm trong payload JWT hiện tại.
 def get_user_profile_service(current_user: dict, db: Session):
 	user = db.query(User).filter(User.email == current_user["email"]).first()
 	if not user:
