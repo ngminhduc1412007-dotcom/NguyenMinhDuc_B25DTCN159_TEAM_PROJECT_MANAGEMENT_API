@@ -6,7 +6,7 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: str
     full_name: str
-    role: str = 'USER'
+    role: str = 'user'
 
 # Các trường có thể cập nhật của người dùng.
 class UserUpdate(BaseModel):

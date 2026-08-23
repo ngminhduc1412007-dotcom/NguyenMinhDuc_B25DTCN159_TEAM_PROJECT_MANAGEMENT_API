@@ -20,9 +20,10 @@ def get_user_by_id_service(user_id: int, db: Session):
     return security_user_data(user)
 
 # Lọc danh sách theo email hoặc họ tên nếu người quản trị truyền từ khóa.
-def list_users_service(db: Session, search: Optional[str] = None):
+def search_user_service(db: Session, search: Optional[str] = None):
     users = db.query(User).order_by(User.id).all()
     if search:
         search = search.strip().lower()
         users = [user for user in users if search in user.email.lower() or search in user.full_name.lower()]
+        # list comprehension duyệt qua các user trong bảng users để tìm dữ liệu dựa trên search
     return [security_user_data(user) for user in users]

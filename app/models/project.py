@@ -18,10 +18,12 @@ class Project(Base):
     )
 
     # Xóa bản ghi thành viên cùng project khi project bị xóa.
+    # delete-orphan (xóa đối tượng mồ côi): Hệ thống tự động quét và 
+    # xóa sạch các bản ghi mồ côi này trong cơ sở dữ liệu.
     members = relationship(
         "ProjectMember",
         back_populates="project",
-        cascade="all, delete-orphan"
+        cascade="all, delete-orphan" 
     )
 
     # Xóa các task phụ thuộc cùng project khi project bị xóa.

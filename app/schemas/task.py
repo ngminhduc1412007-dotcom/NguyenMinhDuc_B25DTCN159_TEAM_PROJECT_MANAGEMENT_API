@@ -7,8 +7,8 @@ class TaskCreate(BaseModel):
     title: str
     description: str
     assignee_id: int
-    status: str = "TODO"
-    priority: str = "MEDIUM"
+    status: str = "todo"
+    priority: str = "medium"
     due_date: datetime
 
 # Dữ liệu cập nhật đầy đủ thông tin task.
