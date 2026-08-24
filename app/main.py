@@ -1,7 +1,8 @@
-from fastapi import FastAPI, HTTPException, Request, status
+from fastapi import FastAPI, HTTPException, Request, status, Depends
 from fastapi.exceptions import RequestValidationError
 from app.db.database import engine, Base
 from app.core.response import create_response
+from app.dependencies.auth_middleware import get_current_admin
 from app.core.exceptions import (
     http_exception_handler,
     validation_exception_handler,
@@ -27,7 +28,7 @@ app.add_exception_handler(Exception, generic_exception_handler)
 
 # Endpoint đơn giản để kiểm tra server đang hoạt động.
 @app.get("/health-check", response_model=ResponseModel, status_code=status.HTTP_200_OK)
-def checking_server(request: Request):
+def checking_server(request: Request, current_user=Depends(get_current_admin)):
     return create_response(
         request,
         status.HTTP_200_OK,

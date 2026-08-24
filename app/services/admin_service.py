@@ -4,26 +4,20 @@ from sqlalchemy.orm import Session
 from app.models.user import User
 from app.services.user_service import security_user_data
 
-# Lấy toàn bộ user theo id và loại bỏ trường password khỏi kết quả.
-def get_all_user_service(db: Session):
-    users = db.query(User).order_by(User.id).all()
-    return [security_user_data(user) for user in users]
-
-# Tìm user theo id và báo lỗi nếu không tồn tại.
-def get_user_by_id_service(user_id: int, db: Session):
-    user = db.query(User).filter(User.id == user_id).first()
-    if not user:
+# Lấy user theo id, tìm theo từ khóa hoặc trả về toàn bộ user.
+def get_users_service(db: Session, search: Optional[str] = None):
+    query = db.query(User).order_by(User.id)
+    if search:
+        search = search.strip().lower()
+        query = query.filter(
+            User.email.ilike(f"%{search}%") or 
+            User.full_name.ilike(f"%{search}%") or 
+            User.is_active.ilike(f"%{search}%")
+        )
+    users = query.all()
+    if not users:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found"
         )
-    return security_user_data(user)
-
-# Lọc danh sách theo email hoặc họ tên nếu người quản trị truyền từ khóa.
-def search_user_service(db: Session, search: Optional[str] = None):
-    users = db.query(User).order_by(User.id).all()
-    if search:
-        search = search.strip().lower()
-        users = [user for user in users if search in user.email.lower() or search in user.full_name.lower()]
-        # list comprehension duyệt qua các user trong bảng users để tìm dữ liệu dựa trên search
     return [security_user_data(user) for user in users]

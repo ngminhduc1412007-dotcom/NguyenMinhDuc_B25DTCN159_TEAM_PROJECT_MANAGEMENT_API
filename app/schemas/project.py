@@ -1,14 +1,14 @@
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 # Dữ liệu tạo project mới.
 class ProjectCreate(BaseModel):
-    name: str
+    name: str = Field(min_length=1, max_length=150)
     description: str
 
 # Dữ liệu cập nhật project.
 class ProjectUpdate(BaseModel):
-    name: str
+    name: str = Field(min_length=1, max_length=150)
     description: str
 
 # Dữ liệu project dùng trong response.
