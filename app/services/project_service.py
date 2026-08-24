@@ -149,5 +149,13 @@ def delete_project_service(id: int, current_user: dict, db: Session):
             status_code=status.HTTP_403_FORBIDDEN,
             detail="No access rights"
         )
+    deleted_project = {
+        "id": project.id,
+        "name": project.name,
+        "description": project.description,
+        "owner_id": project.owner_id,
+        "created_at": project.created_at,
+    }
     db.delete(project)
     db.commit()
+    return deleted_project

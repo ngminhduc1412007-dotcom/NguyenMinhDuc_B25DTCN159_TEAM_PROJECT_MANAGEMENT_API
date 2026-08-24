@@ -94,11 +94,12 @@ def update_project(request: Request, id: int, update_project: ProjectUpdate, cur
 
 @routers.delete("/owner/project/{id}", response_model=ResponseModel, status_code=status.HTTP_200_OK)
 def delete_project(request: Request, id: int, current_user = Depends(get_current_user), db: Session = Depends(get_db)):
-    delete_project_service(id, current_user, db)
+    project = delete_project_service(id, current_user, db)
     return create_response(
         request,
         status.HTTP_200_OK,
-        "Project deleted successfully"
+        "Project deleted successfully",
+        data=project
     )
 
 @routers.post("/projects/{id}/members", response_model=ResponseModel, status_code=status.HTTP_201_CREATED)
@@ -118,11 +119,17 @@ def add_project_member(request: Request, id: int, member: ProjectMemberCreate, c
 
 @routers.delete("/projects/{id}/members/{user_id}", response_model=ResponseModel, status_code=status.HTTP_200_OK)
 def remove_project_member(request: Request, id: int, user_id: int, current_user = Depends(get_current_user), db: Session = Depends(get_db)):
-    remove_project_member_service(id, user_id, current_user, db)
+    member = remove_project_member_service(id, user_id, current_user, db)
     return create_response(
         request,
         status.HTTP_200_OK,
-        "Member removed successfully"
+        "Member removed successfully",
+        data={
+            "project_id": member.project_id,
+            "user_id": member.user_id,
+            "role": member.role,
+            "joined_at": member.joined_at
+        }
     )
 
 @routers.get("/projects/{id}/members", response_model=ResponseModel, status_code=status.HTTP_200_OK)
