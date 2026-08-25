@@ -6,12 +6,13 @@ from app.dependencies.auth_middleware import get_current_admin
 from app.core.exceptions import (
     http_exception_handler,
     validation_exception_handler,
-    generic_exception_handler,
+    generic_exception_handler
 )
 from app.routers.auth import routers as auth_router
 from app.routers.admin import routers as admin_router
 from app.routers.users import routers as user_router
 from app.routers.projects import routers as project_router
+from app.routers.tasks import routers as task_router
 from app.schemas.response import ResponseModel
 from app.models import project, task, user
 
@@ -40,3 +41,4 @@ app.include_router(auth_router)
 app.include_router(admin_router)
 app.include_router(user_router)
 app.include_router(project_router)
+app.include_router(task_router)

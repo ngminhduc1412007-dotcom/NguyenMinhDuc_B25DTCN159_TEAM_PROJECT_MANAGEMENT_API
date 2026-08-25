@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends, status, Request
 from sqlalchemy.orm import Session
 from app.db.database import get_db
 from app.core.response import create_response
-from app.models import project
 from app.schemas.response import ResponseModel
 from app.dependencies.auth_middleware import get_current_user
 from typing import Optional
@@ -20,7 +19,7 @@ from app.services.project_service import(
 from app.services.project_member_service import(
     add_project_member_service,
     remove_project_member_service,
-    list_project_members_service
+    get_project_members_service
 )
 
 routers = APIRouter(tags=["project"])
@@ -71,7 +70,9 @@ def get_project_by_id(request: Request, id: int, current_user = Depends(get_curr
             {
                 "id": get_project.id,
                 "name": get_project.name,
-                "description": get_project.description
+                "description": get_project.description,
+                "owner_id": get_project.owner_id,
+                "created at": get_project.created_at
             }
         ]
     )
@@ -134,7 +135,7 @@ def remove_project_member(request: Request, id: int, user_id: int, current_user 
 
 @routers.get("/projects/{id}/members", response_model=ResponseModel, status_code=status.HTTP_200_OK)
 def list_project_members(request: Request, id: int, current_user = Depends(get_current_user), db: Session = Depends(get_db)):
-    members = list_project_members_service(id, current_user, db)
+    members = get_project_members_service(id, current_user, db)
     return create_response(
         request,
         status.HTTP_200_OK,

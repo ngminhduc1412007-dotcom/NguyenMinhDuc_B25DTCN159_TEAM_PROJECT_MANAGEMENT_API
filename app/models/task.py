@@ -11,8 +11,8 @@ class Task(Base):
     title = Column(String(200), nullable=False)
     description = Column(Text, nullable=True)
     assignee_id = Column(Integer, ForeignKey("users.id"), nullable=True)
-    status = Column(String(30), nullable=False, default="TODO")
-    priority = Column(String(30), nullable=False, default="MEDIUM")
+    status = Column(String(30), nullable=False, default="todo")
+    priority = Column(String(30), nullable=False, default="medium")
     due_date = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.now, nullable=False)
 

@@ -53,7 +53,7 @@ def search_project_service(current_user: dict, db: Session, search: Optional[str
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="User no longer exists"
         )
-    search = search.strip().lower()
+    search = (search or "").strip().lower()
     # Chỉ tìm trong các project mà user hiện tại là thành viên.
     query = db.query(Project).join(ProjectMember).filter(ProjectMember.user_id == user.id)
     if search:

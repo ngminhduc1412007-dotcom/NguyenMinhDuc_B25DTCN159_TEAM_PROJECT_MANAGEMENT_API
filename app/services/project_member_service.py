@@ -32,10 +32,7 @@ def add_project_member_service(id: int, member: ProjectMemberCreate, current_use
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found"
         )
-    existing_member = db.query(ProjectMember).filter(
-        ProjectMember.project_id == id,
-        ProjectMember.user_id == user.id
-    ).first()
+    existing_member = db.query(ProjectMember).filter(ProjectMember.project_id == id, ProjectMember.user_id == user.id).first()
     if existing_member:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -90,6 +87,6 @@ def remove_project_member_service(id: int, user_id: int, current_user: dict, db:
     return project_member
 
 # Lấy danh sách member và role của một project.
-def list_project_members_service(id: int, current_user: dict, db: Session):
+def get_project_members_service(id: int, current_user: dict, db: Session):
     project = get_project_by_id_service(id, current_user, db)
     return db.query(ProjectMember).filter(ProjectMember.project_id == project.id).order_by(ProjectMember.user_id).all()
