@@ -11,11 +11,12 @@ from app.services.admin_service import get_users_service
 routers = APIRouter(tags=["admin"])
 
 # Lấy user theo id, tìm theo từ khóa hoặc lấy toàn bộ user.
-@routers.get("/admin/users/", response_model=ResponseModel, status_code=status.HTTP_200_OK)
-def get_users(request: Request, search: Optional[str] = None, db: Session = Depends(get_db), current_admin=Depends(get_current_admin)):
+@routers.get("/users/", response_model=ResponseModel, status_code=status.HTTP_200_OK)
+def get_users(request: Request, search: Optional[str] = None, is_active: Optional[bool] = None, db: Session = Depends(get_db), current_admin=Depends(get_current_admin)):
     return create_response(
         request,
         status.HTTP_200_OK,
         "Success",
-        data=get_users_service(db, search)
+        data=get_users_service(db, search, is_active)
     )
+    

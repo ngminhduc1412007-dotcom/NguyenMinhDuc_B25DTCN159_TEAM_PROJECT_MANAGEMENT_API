@@ -68,7 +68,7 @@ def create_task_service(id: int, task: TaskCreate, current_user: dict, db: Sessi
 
 def get_tasks_service(
     id: int, current_user: dict, db: Session, search: Optional[str] = None,
-    sort_by: str = "created_at", sort_order: str = "asc"
+    sort_by: str = "created_at", sort_order: str = "asc", limit: int = 10, offset: int = 0
     ):
     project = db.query(Project).filter(Project.id == id).first()
     if not project:
@@ -114,10 +114,14 @@ def get_tasks_service(
     # Chọn cột sắp xếp trong danh sách cho phép, tránh nhận tên cột tùy ý từ client.
     sort_column = Task.created_at if sort_by == "created_at" else Task.due_date
     sort_column = sort_column.asc() if sort_order == "asc" else sort_column.desc()
-    # Luôn lấy 5 task đầu tiên sau khi lọc và sắp xếp.
-    tasks = query.order_by(sort_column).offset(0).limit(5).all()
+    # Phân trang sau khi lọc và sắp xếp.
+    tasks = query.order_by(sort_column).offset(offset).limit(limit).all()
+    if not tasks:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No tasks found for the requested page"
+        )
     return tasks
-
 
 def get_task_by_id_service(id: int, current_user: dict, db: Session):
     task = db.query(Task).filter(Task.id == id).first()
@@ -196,7 +200,6 @@ def update_task_service(id: int, task_update: TaskUpdate, current_user: dict, db
     db.commit()
     db.refresh(task)
     return task
-
 
 def delete_task_service(id: int, current_user: dict, db: Session):
     # Lấy task và kiểm tra user thuộc project.

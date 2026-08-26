@@ -44,6 +44,12 @@ def login_service(user: UserLoginRequest, db: Session):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid email"
         )
+
+    if not user_db.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Account is inactive"
+        )
     
     if not verify_password(user.password, user_db.password_hash):
         raise HTTPException(

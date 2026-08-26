@@ -32,6 +32,11 @@ def add_project_member_service(id: int, member: ProjectMemberCreate, current_use
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found"
         )
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Cannot add an inactive user to the project"
+        )
     existing_member = db.query(ProjectMember).filter(ProjectMember.project_id == id, ProjectMember.user_id == user.id).first()
     if existing_member:
         raise HTTPException(

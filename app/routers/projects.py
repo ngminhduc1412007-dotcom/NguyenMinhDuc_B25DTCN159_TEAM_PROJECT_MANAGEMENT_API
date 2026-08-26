@@ -72,7 +72,7 @@ def get_project_by_id(request: Request, id: int, current_user = Depends(get_curr
                 "name": get_project.name,
                 "description": get_project.description,
                 "owner_id": get_project.owner_id,
-                "created at": get_project.created_at
+                "created_at": get_project.created_at
             }
         ]
     )
