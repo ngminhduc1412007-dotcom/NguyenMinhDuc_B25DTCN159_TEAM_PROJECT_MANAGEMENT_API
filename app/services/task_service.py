@@ -1,6 +1,7 @@
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from typing import Optional
+from datetime import datetime
 from app.models.task import Task
 from app.models.user import User
 from app.models.project import Project, ProjectMember
@@ -38,6 +39,10 @@ def create_task_service(id: int, task: TaskCreate, current_user: dict, db: Sessi
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Members can only assign tasks to themselves"
         )
+    
+    # Khi tạo task không truyền assignee_id thì tự gán cho người tạo task
+    if task.assignee_id is None:
+        task.assignee_id = user.id
 
     # Kiểm tra người được giao task cũng thuộc project này.
     assignee = db.query(User).join(ProjectMember).filter(
@@ -50,6 +55,13 @@ def create_task_service(id: int, task: TaskCreate, current_user: dict, db: Sessi
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail="Assignee is not a member of this project"
             )
+
+    # Kiểm tra due_date không được là ngày trong quá khứ
+    if task.due_date is not None and task.due_date < datetime.now():
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Due date cannot be a date in the past"
+        )
 
     # Lấy dữ liệu từ request và dùng project_id trong URL làm nguồn chính.
     task_data = task.model_dump()
@@ -158,22 +170,22 @@ def update_task_service(id: int, task_update: TaskUpdate, current_user: dict, db
 
     # Owner hoặc assignee của task mới được phép cập nhật.
     is_owner = project.owner_id == user.id
-    is_assignee = task.assignee_id == user.id
-    if not is_owner and not is_assignee:
+    is_assignee = task.assignee_id == user.id       
+    # exclude_unset=True: chỉ lấy các trường client thực sự gửi lên, không ghi đè trường còn lại.
+    # Nếu chỉ cần cập nhật 1 trường thì chỉ cần thay đổi trường đó và các trường khác sẽ giữ nguyên    
+    changes = task_update.model_dump(exclude_unset=True)
+    # Chỉ cho chép owner và assignee mới được cập nhật status
+    if "status" in changes and not is_owner and not is_assignee:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only the project owner or task assignee can update this task"
         )
 
-    # exclude_unset=True: chỉ lấy các trường client thực sự gửi lên, không ghi đè trường còn lại.
-    # Nếu chỉ cần cập nhật 1 trường thì chỉ cần thay đổi trường đó và các trường khác sẽ giữ nguyên
-    changes = task_update.model_dump(exclude_unset=True)
-
-    # # Bỏ qua chuỗi rỗng để không ghi đè dữ liệu hiện tại của task.
-    # changes = {
-    #     key: value for key, value in changes.items()
-    #     if not isinstance(value, str) or value.strip()
-    # }
+    # Bỏ qua chuỗi rỗng để không ghi đè dữ liệu hiện tại của task.
+    changes = {
+        key: value for key, value in changes.items()
+        if not isinstance(value, str) or value.strip()
+    }
 
     # Assignee không được chuyển task sang cho người khác.
     if "assignee_id" in changes and not is_owner:

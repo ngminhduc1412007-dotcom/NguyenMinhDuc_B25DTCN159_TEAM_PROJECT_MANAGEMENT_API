@@ -9,7 +9,7 @@ class TaskCreate(BaseModel):
     assignee_id: int
     status: str = "todo"
     priority: str = "medium"
-    due_date: datetime
+    due_date: Optional[datetime] = None
 
 # Dữ liệu cập nhật đầy đủ thông tin task.
 class TaskUpdate(BaseModel):

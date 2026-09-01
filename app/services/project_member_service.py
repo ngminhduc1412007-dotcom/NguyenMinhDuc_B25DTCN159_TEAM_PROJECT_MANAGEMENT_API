@@ -1,5 +1,6 @@
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy import case
 from app.models.project import Project, ProjectMember
 from app.models.user import User
 from app.schemas.project import ProjectMemberCreate
@@ -94,4 +95,9 @@ def remove_project_member_service(id: int, user_id: int, current_user: dict, db:
 # Lấy danh sách member và role của một project.
 def get_project_members_service(id: int, current_user: dict, db: Session):
     project = get_project_by_id_service(id, current_user, db)
-    return db.query(ProjectMember).filter(ProjectMember.project_id == project.id).order_by(ProjectMember.user_id).all()
+    # return db.query(ProjectMember).filter(ProjectMember.project_id == project.id).order_by(ProjectMember.user_id).all()
+    owner_first = case((ProjectMember.role == "owner", 0), else_=1)
+    return db.query(ProjectMember).filter(ProjectMember.project_id == project.id).order_by(
+        owner_first,
+        ProjectMember.user_id
+    ).all()
