@@ -21,7 +21,7 @@ class ProjectResponse(BaseModel):
 
 # Dữ liệu thêm user vào project.
 class ProjectMemberCreate(BaseModel):
-    user_id: int
+    user_id: int = Field(gt=0)
     role: str = "member"
 
 # Dữ liệu đổi role của thành viên project.

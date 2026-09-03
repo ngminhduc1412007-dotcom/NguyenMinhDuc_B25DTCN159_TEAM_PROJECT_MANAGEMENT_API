@@ -8,6 +8,13 @@ from app.services.project_service import get_project_by_id_service
 
 # Thêm một user vào project khi người dùng là owner.
 def add_project_member_service(id: int, member: ProjectMemberCreate, current_user: dict, db: Session):
+    # Kiểm tra user_id có được cung cấp không
+    if not member.user_id or member.user_id <= 0:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Please provide a valid user_id"
+        )
+    
     project = db.query(Project).filter(Project.id == id).first()
     if not project:
         raise HTTPException(

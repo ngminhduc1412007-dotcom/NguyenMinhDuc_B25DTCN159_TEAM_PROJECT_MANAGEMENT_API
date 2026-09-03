@@ -1,7 +1,7 @@
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timezone
 from app.models.task import Task
 from app.models.user import User
 from app.models.project import Project, ProjectMember
@@ -57,11 +57,18 @@ def create_task_service(id: int, task: TaskCreate, current_user: dict, db: Sessi
             )
 
     # Kiểm tra due_date không được là ngày trong quá khứ
-    if task.due_date is not None and task.due_date < datetime.now():
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Due date cannot be a date in the past"
-        )
+    if task.due_date is not None:
+        # So sánh với UTC time để tránh lỗi offset-naive/offset-aware
+        # .tzinfo là thuộc tính dùng để lấy thông tin về múi giờ (time zone) của đối tượng ngày tháng đó
+        if task.due_date.tzinfo:
+            now_utc = datetime.now(timezone.utc)
+        else:
+            now_utc = datetime.now()
+        if task.due_date < now_utc:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Due date cannot be a date in the past"
+            )
 
     # Lấy dữ liệu từ request và dùng project_id trong URL làm nguồn chính.
     task_data = task.model_dump()
@@ -202,6 +209,20 @@ def update_task_service(id: int, task_update: TaskUpdate, current_user: dict, db
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail="Assignee is not a member of this project"
+            )
+
+    # Kiểm tra due_date không được là ngày trong quá khứ khi cập nhật
+    if "due_date" in changes and changes["due_date"] is not None:
+        # So sánh với UTC time để tránh lỗi offset-naive/offset-aware
+        # .tzinfo là thuộc tính dùng để lấy thông tin về múi giờ (time zone) của đối tượng ngày tháng đó
+        if changes["due_date"].tzinfo:
+            now_utc = datetime.now(timezone.utc)
+        else:
+            now_utc = datetime.now()
+        if changes["due_date"] < now_utc:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Due date cannot be a date in the past"
             )
 
     # Cập nhật các trường hợp lệ vào task.
